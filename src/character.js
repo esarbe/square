@@ -60,7 +60,7 @@ function getDominantes (matrix) {
 function isDominantIn (matrix) {
   return function (orientation) {
 	  return function (cell) {
-      return isDominantIn(cell, orientation);
+			return getValueIn(matrix)(cell)   
     };
   };
 }
@@ -77,7 +77,7 @@ function getDominanteValueForCellAndOrientationIn(matrix) {
     var isDominant = isDominantIn(matrix)(orientation);
     var getValue = getValueIn(matrix);
   
-    return getNeighboars(matrix, cell, orientation).filter(isDominant).map(getValue)
+    return getNeighboars(matrix, cell, orientation).filter(isDominant).map(getValue).max();
   };
 }
 
@@ -104,11 +104,6 @@ function getLowerBoundIn (matrix) {
 	};
 };
 
-function renderDominance (cell) {
- 
-
-}
-
 function getUpperBoundIn (matrix) {
   
 	var getValue = getValueIn(matrix);
@@ -118,9 +113,8 @@ function getUpperBoundIn (matrix) {
 
 	  var colMax = getDominanteValueForCellAndOrientation(cell, COLUMN);
 	  var rowMax = getDominanteValueForCellAndOrientation(cell, ROW);
-   
 
-    if (isDominantIn(matrix)(cell)(ROW) && isDominantIn(matrix)(cell)(COLUMN)) {
+    /*if (isDominantIn(matrix)(cell)(ROW) && isDominantIn(matrix)(cell)(COLUMN)) {
 		  return ATTR_MAX; 
 		} else if (isDominantIn(matrix)(cell)(ROW)) {
 			return colMax - 1; 
@@ -128,12 +122,19 @@ function getUpperBoundIn (matrix) {
 		  return rowMax - 1; 
 		} else {
 		  return Math.min(rowMax, colMax) - 1;
-		}
+		}*/
+    
 	};
+}
 
+function isCellDominantIn(matrix, cell) {
+  return function (orientation) {
+	  return isDominantIn(matrix)(cell)(orientation); 
+	};
 }
 
 
-
+console.log(attrs);
 console.log(forCellInMatrix(attrs)(getUpperBoundIn(attrs)));
+console.log(forCellInMatrix(attrs)(isCellDominantIn(ROW)));
 
