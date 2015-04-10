@@ -65,13 +65,13 @@ Attributes.prototype = new Matrix();
 
 Attributes.prototype.incrementAtRandom = function () {
 
-  var incrCell = getCoordsForIncr(this).randomElement();
+  var coordinatesForIncrementation = getCoordinatesForCellsThatCanBeIncremented(this).randomElement();
 
   var values = this.values.clone();
 
   var
-      i = incrCell[0],
-      k = incrCell[1];
+      i = coordinatesForIncrementation[0],
+      k = coordinatesForIncrementation[1];
 
   values[i][k]++;
   return new Attributes({values: values});
@@ -136,7 +136,7 @@ function and (a, b) {
  *
  * @param attributes
  */
-function evaluateMatrixIncrements (attributes) {
+function evaluateAttributeIncrements (attributes) {
 
   var upperBoundsRowwise = attributes.map(upperBound);
   var upperBoundsColumnwise = attributes.invert().map(upperBound).invert();
@@ -189,10 +189,10 @@ function toCellCoordinate (cell) {
   return cell.coord;
 }
 
-function getCoordsForIncr (attributes) {
-  return evaluateMatrixIncrements(attributes).getValuesAndCoordinates().filter(canIncrement).map(toCellCoordinate);
+function getCoordinatesForCellsThatCanBeIncremented (attributes) {
+  return evaluateAttributeIncrements(attributes).getValuesAndCoordinates().filter(canIncrement).map(toCellCoordinate);
 }
 
 console.log(Character.generateRandom().toString());
-//console.log(getCoordsForIncr(new Attributes()));
+//console.log(getCoordinatesForCellsThatCanBeIncremented(new Attributes()));
 //console.log(new Attributes().incrementAtRandom().values);
