@@ -1,5 +1,4 @@
 "use strict";
-
 var ATTR_MIN = 1;
 var ATTR_MAX = 6;
 
@@ -109,9 +108,9 @@ function merge (first, second, f) {
   var merged = [];
   first.forEach( function (row, i) {
     merged[i] = [];
-	row.forEach( function (cell, k) {
-	  merged[i][k] = f(first[i][k], second[i][k]);
-	});
+    row.forEach( function (cell, k) {
+		  merged[i][k] = f(first[i][k], second[i][k]);
+    });
   });
 
   return merged;
@@ -163,10 +162,9 @@ function upperBound (array) {
 }
 
 /**
- * returns an array of tuples with coordinates and value for each cell of the array of arrays
+ * returns the coordinates and values of each cell of the matrix 
  *
- * @param arrayOfArrays
- * @returns {Array}
+ * @returns {{ value: Object, coord: [Number, Number] }[]}
  */
 Matrix.prototype.getValuesAndCoordinates = function () {
 
@@ -193,6 +191,4 @@ function getCoordinatesForCellsThatCanBeIncremented (attributes) {
   return evaluateAttributeIncrements(attributes).getValuesAndCoordinates().filter(canIncrement).map(toCellCoordinate);
 }
 
-console.log(Character.generateRandom().toString());
-//console.log(getCoordinatesForCellsThatCanBeIncremented(new Attributes()));
-//console.log(new Attributes().incrementAtRandom().values);
+exports.Character = Character;
