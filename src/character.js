@@ -8,7 +8,11 @@ Object.prototype.clone = function () {
 
 Array.prototype.max = function () {
   return Math.max.apply(null, this);
-};
+}
+
+Array.prototype.flatten = function () {
+  return [].concat.apply([], this);
+}
 
 Array.prototype.randomElement = function () {
   return this[Math.floor(Math.random() * this.length)];
@@ -16,7 +20,17 @@ Array.prototype.randomElement = function () {
 
 Array.prototype.min = function () {
   return Math.min.apply(null, this);
-};
+}
+
+var Matrix = function (template) {
+
+  this.values = (template || {}).values || [
+    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ],
+    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ],
+    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ]
+  ];
+}
+
 
 function invert (matrix) {
   var inverted = [];
@@ -31,20 +45,24 @@ function invert (matrix) {
   return inverted;
 }
 
-var Matrix = function (template) {
-
-  this.values = (template || {}).values || [
-    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ],
-    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ],
-    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ]
-  ];
-};
-
 Matrix.prototype.invert = function () {
   return new Matrix({values: invert(this.values)});
 }
 
 Matrix.prototype.map = function (f) {
+
+  var mapped = this.values.map(function (row) {
+    return row.map(f);
+  });
+
+  return new Matrix({values: mapped});
+}
+
+Matrix.prototype.mapColumns = function (f) {
+  return new Matrix({values: this.invert().values.map(f)}).invert();
+}
+
+Matrix.prototype.mapRows = function (f) {
   return new Matrix({values: this.values.map(f)});
 }
 
@@ -76,6 +94,22 @@ Attributes.prototype.incrementAtRandom = function () {
   return new Attributes({values: values});
 }
 
+Attributes.prototype.isValid = function () {
+  var upperBoundsRowwise = attributes.map(upperBound);
+  var upperBoundsColumnwise = attributes.invert().map(upperBound).invert();
+}
+
+Attributes.prototype.getBounds = function () {
+  var upperBoundsRowwise = this.map(upperBound);
+  var upperBoundsColumnwise = this.invert().map(upperBound).invert();
+
+  return upperBoundsRowwise.merge(upperBoundsColumnwise, Math.min)
+}
+
+Attributes.prototype.getIsIncrementable = function () {
+  return evaluateAttributeIncrements(this);  
+}
+
 Character.generateRandom = function () {
   var character = new Character();
 
@@ -90,6 +124,10 @@ Character.prototype.incrementAttributeAtRandom = function () {
 
   var attributes = this.attributes.incrementAtRandom();
   return new Character({attributes: attributes})
+}
+
+Character.prototype.isValid = function () {
+  return this.attributes.isValid();
 }
 
 Character.prototype.toString = function () {
@@ -109,7 +147,7 @@ function merge (first, second, f) {
   first.forEach( function (row, i) {
     merged[i] = [];
     row.forEach( function (cell, k) {
-		  merged[i][k] = f(first[i][k], second[i][k]);
+      merged[i][k] = f(first[i][k], second[i][k]);
     });
   });
 
@@ -123,7 +161,7 @@ function merge (first, second, f) {
  * @returns {boolean} whether the value can be incremented
  */
 function cellValueCanBeIncremented (value, differenceToUpperBound) {
-  return differenceToUpperBound > 1 || value < ATTR_MAX;
+  return differenceToUpperBound > 1 || (differenceToUpperBound == 0 && value < ATTR_MAX);
 }
 
 function and (a, b) {
@@ -137,8 +175,8 @@ function and (a, b) {
  */
 function evaluateAttributeIncrements (attributes) {
 
-  var upperBoundsRowwise = attributes.map(upperBound);
-  var upperBoundsColumnwise = attributes.invert().map(upperBound).invert();
+  var upperBoundsRowwise = attributes.mapRows(upperBound);
+  var upperBoundsColumnwise = attributes.mapColumns(upperBound);
 
   var canBeIncrementedRowwise = attributes.merge(upperBoundsRowwise, cellValueCanBeIncremented );
   var canBeIncrementedColumnwise = attributes.merge(upperBoundsColumnwise, cellValueCanBeIncremented );
@@ -162,7 +200,7 @@ function upperBound (array) {
 }
 
 /**
- * returns the coordinates and values of each cell of the matrix 
+ * returns the coordinates and values of each cell of the matrix
  *
  * @returns {{ value: Object, coord: [Number, Number] }[]}
  */
@@ -174,9 +212,7 @@ Matrix.prototype.getValuesAndCoordinates = function () {
     });
   });
 
-  var flatMapped = [].concat.apply([], mapped);
-
-  return flatMapped;
+  return mapped.flatten();
 }
 
 function canIncrement (cell) {
@@ -188,7 +224,9 @@ function toCellCoordinate (cell) {
 }
 
 function getCoordinatesForCellsThatCanBeIncremented (attributes) {
-  return evaluateAttributeIncrements(attributes).getValuesAndCoordinates().filter(canIncrement).map(toCellCoordinate);
+  return attributes.getIsIncrementable().getValuesAndCoordinates().filter(canIncrement).map(toCellCoordinate);
 }
 
 exports.Character = Character;
+exports.Character.Attributes = Attributes;
+exports.upperBound = upperBound;
