@@ -148,17 +148,13 @@ Matrix.prototype.crossMapMerge = function (f, g) {
   return rowWise.merge(columnWise, g);
 }
 
-var Character = function (template) {
-  this.attributes = (template || {}).attributes || new Attributes();
-}
-
 var Attributes = function (template) {
   
   this.VALUE_MIN = 1;
   this.VALUE_MAX = 6;
   
   if (template === undefined) {
-    template = Matrix.withSize(3,3).map ( function (){ return Attributes.VALUE_MIN; });
+    template = Matrix.withSize(3,3).map ( function () { return { value : Attributes.VALUE_MIN }; });
   }
 
   Matrix.call(this, template);
@@ -188,7 +184,7 @@ Attributes.prototype.incrementAtRandom = function () {
       i = coordinatesForIncrementation[0],
       k = coordinatesForIncrementation[1];
 
-  values[i][k]++;
+  values[i][k].value++;
   return new Attributes({values: values});
 }
 
@@ -206,15 +202,19 @@ Attributes.prototype.getBounds = function () {
 }
 
 Attributes.prototype.getValues = function () {
-  return this.map(function (v) { return v;});
+  return this.map(function (v) { return v.value; });
 }
 
 Attributes.prototype.getIsIncrementable = function () {
   return evaluateAttributeIncrements(this.getValues());
 }
 
+var Character = function (template) {
+  this.attributes = (template || {}).attributes || new Attributes();
+}
+
 Character.prototype.bake = function () {
-  
+
 }
 
 Character.generateRandom = function () {

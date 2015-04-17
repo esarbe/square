@@ -39,9 +39,9 @@ describe('Attributes', function () {
 
   var onlyOneIncrementableCell = {
     values: [
-      [ 4, 5, 6 ],
-      [ 5, 6, 5 ],
-      [ 6, 5, 5 ]
+      [ { value: 4 }, { value: 5 }, { value: 6 } ],
+      [ { value: 5 }, { value: 6 }, { value: 5 } ],
+      [ { value: 6 }, { value: 5 }, { value: 5 } ]
     ]
   };
   
