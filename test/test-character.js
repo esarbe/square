@@ -1,6 +1,16 @@
 var assert = require('assert');
 var Square = require('../src/character.js');
 
+describe('Matrix', function () {
+  describe('constructor', function () {
+    it('should create a new matrix with rectangular values array', function () {
+      var m = Square.Matrix.withSize(3,4);
+
+      assert.equal(m.values.length, 3);
+    });
+  });
+});
+
 describe('Character', function () {
 
   describe('constructor', function () {
