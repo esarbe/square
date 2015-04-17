@@ -171,6 +171,14 @@ Attributes.prototype = new Matrix();
 
 Attributes.prototype.incrementAtRandom = function () {
 
+  function canIncrement (cell) {
+    return cell.value;
+  }
+
+  function toCellCoordinate (cell) {
+    return cell.coord;
+  }
+
   var cellCoords = this.getIsIncrementable().getValuesAndCoordinates();
   var coordinatesForIncrementation = cellCoords.filter(canIncrement).map(toCellCoordinate).randomElement();
 
@@ -183,7 +191,6 @@ Attributes.prototype.incrementAtRandom = function () {
   values[i][k]++;
   return new Attributes({values: values});
 }
-
 
 Attributes.prototype.isValid = function () {
   if (!this.attributes.isValid() || this.attributes.length !== this.attributes[0].length ) {
@@ -276,14 +283,6 @@ function upperBound (array) {
   return array.map( function (val) {
     return max - val;
   });
-}
-
-function canIncrement (cell) {
-  return cell.value === true;
-}
-
-function toCellCoordinate (cell) {
-  return cell.coord;
 }
 
 exports.Character = Character;
