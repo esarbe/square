@@ -202,7 +202,7 @@ Attributes.prototype.isValid = function () {
 }
 
 Attributes.prototype.getBounds = function () {
-  return this.crossMapMerge(upperBound, Math.min);
+  return this.getValues().crossMapMerge(upperBound, Math.min);
 }
 
 Attributes.prototype.getValues = function () {
@@ -210,7 +210,7 @@ Attributes.prototype.getValues = function () {
 }
 
 Attributes.prototype.getIsIncrementable = function () {
-  return evaluateAttributeIncrements(this);
+  return evaluateAttributeIncrements(this.getValues());
 }
 
 Character.prototype.bake = function () {
