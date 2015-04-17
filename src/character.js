@@ -250,10 +250,6 @@ function cellValueCanBeIncremented (value, differenceToUpperBound) {
   return differenceToUpperBound > 1 || (differenceToUpperBound == 0 && value < Attributes.VALUE_MAX);
 }
 
-function and (a, b) {
-  return a && b;
-}
-
 /**
  * map each attribute (cell) to a boolean that indicates whether it can be incremented
  *
@@ -261,9 +257,13 @@ function and (a, b) {
  */
 function evaluateAttributeIncrements (attributes) {
 
+  function and (a, b) {
+    return a && b;
+  }
+
   var upperBoundsRowwise = attributes.mapRows(upperBound);
   var canBeIncrementedRowwise = attributes.merge(upperBoundsRowwise, cellValueCanBeIncremented );
-  
+
   var upperBoundsColumnwise = attributes.mapColumns(upperBound);
   var canBeIncrementedColumnwise = attributes.merge(upperBoundsColumnwise, cellValueCanBeIncremented );
 
@@ -287,5 +287,4 @@ function upperBound (array) {
 
 exports.Character = Character;
 exports.Character.Attributes = Attributes;
-exports.upperBound = upperBound;
 exports.Matrix = Matrix
