@@ -180,7 +180,7 @@ Attributes.prototype.getIsIncrementable = function () {
   return evaluateAttributeIncrements(this);  
 }
 
-Charakter.prototype.bake = function () {
+Character.prototype.bake = function () {
   
 }
 

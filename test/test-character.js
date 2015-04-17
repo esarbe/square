@@ -36,6 +36,14 @@ describe('Attributes', function () {
     ]
   };
 
+  var onlyOneIncrementableCellValues = {
+    values: [
+      [ 4, 5, 6 ],
+      [ 5, 6, 5 ],
+      [ 6, 5, 5 ]
+    ]
+  };
+  
   var isIncrementableCheck = [
     [ true,  false, false],
     [ false, false, false ],
@@ -60,6 +68,15 @@ describe('Attributes', function () {
     });
   });
 
+  describe('getValues', function () {
+    it('should return a matrix with only the bare values of the attributes', function () {
+      var attrs = new Square.Character.Attributes(onlyOneIncrementableCell);
+
+      var attrValues = attrs.getValues();
+
+      assert.deepEqual(onlyOneIncrementableCellValues, attrValues);
+    });
+  });
 
 });
 
