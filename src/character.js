@@ -100,7 +100,28 @@ Matrix.prototype.mapRows = function (f) {
   return new Matrix({values: this.values.map(f)});
 }
 
+/**
+ * merge two array of arrays element wise using the given function f
+ *
+ * @param first first array of arrays to operate on
+ * @param second second array of arrays to operate on
+ * @param f function that takes two cell values and returns a new value
+ * @returns {Array}
+ */
 Matrix.prototype.merge = function (other, f) {
+
+  function merge (first, second, f) {
+    var merged = [];
+    first.forEach( function (row, i) {
+      merged[i] = [];
+      row.forEach( function (cell, k) {
+        merged[i][k] = f(first[i][k], second[i][k]);
+      });
+    });
+
+    return merged;
+  }
+
   return new Matrix({values: merge(this.values, other.values, f)});
 }
 
@@ -118,6 +139,13 @@ Matrix.prototype.getValuesAndCoordinates = function () {
   });
 
   return mapped.flatten();
+}
+
+Matrix.prototype.crossMapMerge = function (f, g) {
+  var rowWise = this.mapRows(f);
+  var columnWise = this.mapColumns(f);
+
+  return rowWise.merge(columnWise, g);
 }
 
 var Character = function (template) {
@@ -156,12 +184,6 @@ Attributes.prototype.incrementAtRandom = function () {
   return new Attributes({values: values});
 }
 
-Attributes.prototype.crossMapMerge = function (f, g) {
-  var rowWise = this.mapRows(f);
-  var columnWise = this.mapColumns(f);
-
-  return rowWise.merge(columnWise, g);
-}
 
 Attributes.prototype.isValid = function () {
   if (!this.attributes.isValid() || this.attributes.length !== this.attributes[0].length ) {
@@ -177,11 +199,11 @@ Attributes.prototype.getBounds = function () {
 }
 
 Attributes.prototype.getValues = function () {
-  return this.map(function (v) { return v;}); 
+  return this.map(function (v) { return v;});
 }
 
 Attributes.prototype.getIsIncrementable = function () {
-  return evaluateAttributeIncrements(this);  
+  return evaluateAttributeIncrements(this);
 }
 
 Character.prototype.bake = function () {
@@ -209,26 +231,6 @@ Character.prototype.isValid = function () {
 
 Character.prototype.toString = function () {
   return JSON.stringify(this);
-}
-
-/**
- * merge two array of arrays element wise using the given function f
- *
- * @param first first array of arrays to operate on
- * @param second second array of arrays to operate on
- * @param f function that takes two cell values and returns a new value
- * @returns {Array}
- */
-function merge (first, second, f) {
-  var merged = [];
-  first.forEach( function (row, i) {
-    merged[i] = [];
-    row.forEach( function (cell, k) {
-      merged[i][k] = f(first[i][k], second[i][k]);
-    });
-  });
-
-  return merged;
 }
 
 /**
