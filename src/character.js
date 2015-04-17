@@ -1,6 +1,4 @@
 "use strict";
-var ATTR_MIN = 1;
-var ATTR_MAX = 6;
 
 Object.prototype.clone = function () {
   return JSON.parse(JSON.stringify(this));
@@ -23,14 +21,51 @@ Array.prototype.min = function () {
 }
 
 var Matrix = function (template) {
-
-  this.values = (template || {}).values || [
-    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ],
-    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ],
-    [ ATTR_MIN, ATTR_MIN, ATTR_MIN ]
-  ];
+  this.values = (template || {}).values || [ [] ];
 }
 
+Matrix.fromValues = function (values) {
+  var m = new Matrix({values: values});
+  
+  if (!m.isValid()) {
+    throw "values has to be a rectangular array"
+  }
+
+  return m;
+};
+
+Matrix.withSize = function (width, height) {
+  var j = 0,
+      k = 0,
+      values = [];
+ 
+  for (j = 0; j < width; j++) {
+    var row = [];
+    for(k = 0; k < height; k++) {
+      row.push({});
+    }
+		values.push(row);
+  }
+ 
+  return Matrix.fromValues(values);
+};
+
+/**
+ * check whether the attributes array is rectangular
+ */
+Matrix.prototype.isValid = function () {
+  var lengths = this.values.map( function (row) {
+    return row.length;
+  });
+  
+  var accInit = [ lengths[0] || 0, true];
+
+  var allSameLength = lengths.reduce( function ( acc, b) {
+    return [acc[0], acc[0] === b && acc[1]]
+  }, accInit );
+
+  return allSameLength;
+}
 
 function invert (matrix) {
   var inverted = [];
@@ -50,7 +85,6 @@ Matrix.prototype.invert = function () {
 }
 
 Matrix.prototype.map = function (f) {
-
   var mapped = this.values.map(function (row) {
     return row.map(f);
   });
@@ -70,19 +104,47 @@ Matrix.prototype.merge = function (other, f) {
   return new Matrix({values: merge(this.values, other.values, f)});
 }
 
+/**
+ * returns the coordinates and values of each cell of the matrix
+ *
+ * @returns {{ value: {}, coord: [Number, Number] }[]}
+ */
+Matrix.prototype.getValuesAndCoordinates = function () {
+
+  var mapped = this.values.map( function (row, j) {
+    return row.map(function (cell, k) {
+      return { value: cell, coord: [j, k] };
+    });
+  });
+
+  return mapped.flatten();
+}
+
 var Character = function (template) {
   this.attributes = (template || {}).attributes || new Attributes();
 }
 
 var Attributes = function (template) {
-  Matrix.call(this, template);
+  
+  this.VALUE_MIN = 1;
+  this.VALUE_MAX = 6;
+  
+  if (template === undefined) {
+    template = Matrix.withSize(3,3).map ( function (){ return Attributes.VALUE_MIN; });
+  }
+
+	Matrix.call(this, template);
 }
+
+Attributes.VALUE_MIN = 1;
+Attributes.VALUE_MAX = 6;
 
 Attributes.prototype = new Matrix();
 
 Attributes.prototype.incrementAtRandom = function () {
 
-  var coordinatesForIncrementation = getCoordinatesForCellsThatCanBeIncremented(this).randomElement();
+  var cellCoords = this.getIsIncrementable().getValuesAndCoordinates();
+	var coordinatesForIncrementation = cellCoords.filter(canIncrement).map(toCellCoordinate).randomElement();
 
   var values = this.values.clone();
 
@@ -94,20 +156,32 @@ Attributes.prototype.incrementAtRandom = function () {
   return new Attributes({values: values});
 }
 
+Attributes.prototype.crossMapMerge = function (f, g) {
+  var rowWise = this.mapRows(f);
+  var columnWise = this.mapColumns(f);
+
+  return rowWise.merge(columnWise, g);
+}
+
 Attributes.prototype.isValid = function () {
+  if (!this.attributes.isValid() || this.attributes.length !== this.attributes[0].length ) {
+    return false;
+  }
+
   var upperBoundsRowwise = attributes.map(upperBound);
   var upperBoundsColumnwise = attributes.invert().map(upperBound).invert();
 }
 
 Attributes.prototype.getBounds = function () {
-  var upperBoundsRowwise = this.map(upperBound);
-  var upperBoundsColumnwise = this.invert().map(upperBound).invert();
-
-  return upperBoundsRowwise.merge(upperBoundsColumnwise, Math.min)
+  return this.crossMapMerge(upperBound, Math.min);
 }
 
 Attributes.prototype.getIsIncrementable = function () {
   return evaluateAttributeIncrements(this);  
+}
+
+Charakter.prototype.bake = function () {
+  
 }
 
 Character.generateRandom = function () {
@@ -121,7 +195,6 @@ Character.generateRandom = function () {
 }
 
 Character.prototype.incrementAttributeAtRandom = function () {
-
   var attributes = this.attributes.incrementAtRandom();
   return new Character({attributes: attributes})
 }
@@ -161,7 +234,7 @@ function merge (first, second, f) {
  * @returns {boolean} whether the value can be incremented
  */
 function cellValueCanBeIncremented (value, differenceToUpperBound) {
-  return differenceToUpperBound > 1 || (differenceToUpperBound == 0 && value < ATTR_MAX);
+  return differenceToUpperBound > 1 || (differenceToUpperBound == 0 && value < Attributes.VALUE_MAX);
 }
 
 function and (a, b) {
@@ -176,9 +249,9 @@ function and (a, b) {
 function evaluateAttributeIncrements (attributes) {
 
   var upperBoundsRowwise = attributes.mapRows(upperBound);
-  var upperBoundsColumnwise = attributes.mapColumns(upperBound);
-
   var canBeIncrementedRowwise = attributes.merge(upperBoundsRowwise, cellValueCanBeIncremented );
+  
+  var upperBoundsColumnwise = attributes.mapColumns(upperBound);
   var canBeIncrementedColumnwise = attributes.merge(upperBoundsColumnwise, cellValueCanBeIncremented );
 
   return canBeIncrementedRowwise.merge(canBeIncrementedColumnwise, and);
@@ -199,22 +272,6 @@ function upperBound (array) {
   });
 }
 
-/**
- * returns the coordinates and values of each cell of the matrix
- *
- * @returns {{ value: Object, coord: [Number, Number] }[]}
- */
-Matrix.prototype.getValuesAndCoordinates = function () {
-
-  var mapped = this.values.map( function (row, j) {
-    return row.map(function (cell, k) {
-      return { value: cell, coord: [j, k] };
-    });
-  });
-
-  return mapped.flatten();
-}
-
 function canIncrement (cell) {
   return cell.value === true;
 }
@@ -223,10 +280,7 @@ function toCellCoordinate (cell) {
   return cell.coord;
 }
 
-function getCoordinatesForCellsThatCanBeIncremented (attributes) {
-  return attributes.getIsIncrementable().getValuesAndCoordinates().filter(canIncrement).map(toCellCoordinate);
-}
-
 exports.Character = Character;
 exports.Character.Attributes = Attributes;
 exports.upperBound = upperBound;
+exports.Matrix = Matrix
