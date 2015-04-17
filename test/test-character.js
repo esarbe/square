@@ -35,6 +35,14 @@ describe('Attributes', function () {
       [ 6, 5, 5 ]
     ]
   };
+  
+  var onlyOnIncrementableCellBounds = {
+    values: [
+      [2, 1, 0],
+      [1, 0, 1],
+      [0, 1, 1]
+    ]
+  };
 
   var onlyOneIncrementableCellValues = {
     values: [
@@ -55,6 +63,15 @@ describe('Attributes', function () {
       var attrs = new Square.Character.Attributes(onlyOneIncrementableCell);
 
       assert.deepEqual(attrs.values, onlyOneIncrementableCell.values);
+    });
+  });
+
+  describe('getBounds', function () {
+    it('should return a matrix that contains the upper bound of each cell', function () {
+      
+      var attrs = new Square.Character.Attributes(onlyOneIncrementableCell);
+      var bounds = attrs.getBounds();
+      assert.deepEqual(onlyOnIncrementableCellBounds, bounds);
     });
   });
 
