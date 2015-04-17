@@ -44,7 +44,7 @@ Matrix.withSize = function (width, height) {
     for(k = 0; k < height; k++) {
       row.push({});
     }
-		values.push(row);
+    values.push(row);
   }
  
   return Matrix.fromValues(values);
@@ -161,7 +161,7 @@ var Attributes = function (template) {
     template = Matrix.withSize(3,3).map ( function (){ return Attributes.VALUE_MIN; });
   }
 
-	Matrix.call(this, template);
+  Matrix.call(this, template);
 }
 
 Attributes.VALUE_MIN = 1;
@@ -172,7 +172,7 @@ Attributes.prototype = new Matrix();
 Attributes.prototype.incrementAtRandom = function () {
 
   var cellCoords = this.getIsIncrementable().getValuesAndCoordinates();
-	var coordinatesForIncrementation = cellCoords.filter(canIncrement).map(toCellCoordinate).randomElement();
+  var coordinatesForIncrementation = cellCoords.filter(canIncrement).map(toCellCoordinate).randomElement();
 
   var values = this.values.clone();
 
