@@ -12,10 +12,19 @@ describe('Matrix', function () {
 });
 
 describe('Character', function () {
+  var allMinValues = {
+    values: [
+      [1,1,1],
+      [1,1,1],
+      [1,1,1]
+    ]
+  };
 
   describe('constructor', function () {
     it('should create a new character', function () {
       var character = new Square.Character();
+      var attrValues = character.attributes.getValues();
+      assert.deepEqual(attrValues, allMinValues);
     });
   });
 
