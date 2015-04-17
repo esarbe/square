@@ -176,6 +176,10 @@ Attributes.prototype.getBounds = function () {
   return this.crossMapMerge(upperBound, Math.min);
 }
 
+Attributes.prototype.getValues = function () {
+  return this.map(function (v) { return v;}); 
+}
+
 Attributes.prototype.getIsIncrementable = function () {
   return evaluateAttributeIncrements(this);  
 }
