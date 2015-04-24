@@ -19,12 +19,41 @@ describe('Character', function () {
       [ 1, 1, 1]
     ]
   };
+  
+  var canBeIncremented = {
+    values: [
+      [ true, false, false ],
+      [ false, false, false ],
+      [ false, false, false ]
+    ]
+  };
+
+  var onlyOneIncrementableCell = {
+    values: [
+      [ { value: 4 }, { value: 5 }, { value: 6 } ],
+      [ { value: 5 }, { value: 6 }, { value: 5 } ],
+      [ { value: 6 }, { value: 5 }, { value: 5 } ]
+    ]
+  };
 
   describe('constructor', function () {
     it('should create a new character', function () {
       var character = new Square.Character();
       var attrValues = character.attributes.getValues();
       assert.deepEqual(attrValues, allMinValues);
+    });
+  });
+
+  describe('bake', function () {
+    it('should collect all Character information and validate character', function () {
+      var attrs = new Square.Character.Attributes(onlyOneIncrementableCell);
+      var character = new Square.Character({attributes: attrs});
+      var baked = character.bake();
+      var incrementable = baked.attributes.map( function (c) {
+        return c.isIncrementable;
+      });
+
+      assert.deepEqual(incrementable.values, canBeIncremented.values);
     });
   });
 
