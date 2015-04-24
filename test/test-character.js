@@ -14,9 +14,9 @@ describe('Matrix', function () {
 describe('Character', function () {
   var allMinValues = {
     values: [
-      [1,1,1],
-      [1,1,1],
-      [1,1,1]
+      [ 1, 1, 1],
+      [ 1, 1, 1],
+      [ 1, 1, 1]
     ]
   };
 
