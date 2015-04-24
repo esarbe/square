@@ -215,6 +215,17 @@ var Character = function (template) {
 
 Character.prototype.bake = function () {
 
+  function mergeIsIncrementable (attr, isIncrementable) {
+    var merged = attr.clone();
+    merged["isIncrementable"] = isIncrementable;
+    return merged;
+  }
+
+  var incrementable = this.attributes.getIsIncrementable();
+
+  var bakedAttributes = this.attributes.merge(incrementable, mergeIsIncrementable);
+
+  return new Character({attributes: bakedAttributes });
 }
 
 Character.generateRandom = function () {
@@ -224,7 +235,7 @@ Character.generateRandom = function () {
     character = character.incrementAttributeAtRandom();
   }
 
-  return character;
+  return character.bake();
 }
 
 Character.prototype.incrementAttributeAtRandom = function () {
