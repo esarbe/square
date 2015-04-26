@@ -24,6 +24,9 @@ var Matrix = function (template) {
   this.values = (template || {}).values || [ [] ];
 }
 
+/**
+ * create a new matrix from a rectangular array
+ */
 Matrix.fromValues = function (values) {
   var m = new Matrix({values: values});
   
@@ -34,6 +37,9 @@ Matrix.fromValues = function (values) {
   return m;
 };
 
+/**
+ * create a new matrix with given width and height
+ */
 Matrix.withSize = function (width, height) {
   var j = 0,
       k = 0,
