@@ -73,21 +73,21 @@ Matrix.prototype.isValid = function () {
   return allSameLength;
 }
 
-function invert (matrix) {
-  var inverted = [];
+function transpose (matrix) {
+  var transposed = [];
 
   matrix.forEach( function (row, i) {
     row.forEach( function (cell, k) {
-      inverted[k] = inverted[k] || [];
-      inverted[k][i] = matrix[i][k];
+      transposed[k] = transposed[k] || [];
+      transposed[k][i] = matrix[i][k];
     });
   });
 
-  return inverted;
+  return transposed;
 }
 
-Matrix.prototype.invert = function () {
-  return new Matrix({values: invert(this.values)});
+Matrix.prototype.transpose = function () {
+  return new Matrix({values: transpose(this.values)});
 }
 
 Matrix.prototype.map = function (f) {
@@ -99,7 +99,7 @@ Matrix.prototype.map = function (f) {
 }
 
 Matrix.prototype.mapColumns = function (f) {
-  return new Matrix({values: this.invert().values.map(f)}).invert();
+  return new Matrix({values: this.transpose().values.map(f)}).transpose();
 }
 
 Matrix.prototype.mapRows = function (f) {
@@ -200,7 +200,7 @@ Attributes.prototype.isValid = function () {
   }
 
   var upperBoundsRowwise = attributes.map(upperBound);
-  var upperBoundsColumnwise = attributes.invert().map(upperBound).invert();
+  var upperBoundsColumnwise = attributes.transpose().map(upperBound).transpose();
 }
 
 Attributes.prototype.getBounds = function () {
