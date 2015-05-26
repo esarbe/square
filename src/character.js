@@ -74,12 +74,9 @@ Matrix.prototype.isValid = function () {
 }
 
 function transpose (matrix) {
-  var transposed = [];
-
-  matrix.forEach( function (row, i) {
-    row.forEach( function (cell, k) {
-      transposed[k] = transposed[k] || [];
-      transposed[k][i] = matrix[i][k];
+  var transposed = matrix[0].map( function (col, i) {
+    return matrix.map( function (row) {
+      return row[i];
     });
   });
 
