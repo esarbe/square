@@ -88,8 +88,13 @@ Matrix.prototype.transpose = function () {
 }
 
 Matrix.prototype.map = function (f) {
-  var mapped = this.values.map(function (row) {
-    return row.map(f);
+  var mapRow = function (row, i) {
+  };
+
+  var mapped = this.values.map(function (row, i) {
+    return row.map(function (cell, k) {
+      return f(cell, [i, k]);
+    } );
   });
 
   return new Matrix({values: mapped});
@@ -144,6 +149,10 @@ Matrix.prototype.getValuesAndCoordinates = function () {
   return mapped.flatten();
 }
 
+/**
+ * apply f row and column wise and use g to merge to two
+ * resulting matrices
+ */
 Matrix.prototype.crossMapMerge = function (f, g) {
   var rowWise = this.mapRows(f);
   var columnWise = this.mapColumns(f);
@@ -208,6 +217,10 @@ Attributes.prototype.getValues = function () {
   return this.map(function (v) { return v.value; });
 }
 
+/**
+ * return a Matrix with booleans indicating whether the coresponding
+ * cell can be incremented
+*/
 Attributes.prototype.getIsIncrementable = function () {
   return evaluateAttributeIncrements(this.getValues());
 }
@@ -218,17 +231,41 @@ var Character = function (template) {
 
 Character.prototype.bake = function () {
 
-  function mergeIsIncrementable (attr, isIncrementable) {
-    var merged = attr.clone();
-    merged["isIncrementable"] = isIncrementable;
-    return merged;
+  function merge (propertyName) {
+    return function (attr, propertyValue) {
+      var merged = attr.clone();
+      merged[propertyName] = propertyValue;
+      return merged;
+    }
   }
+
+  var mergeIsIncrementable = merge("isIncrementable");
+  var mergeCoordinates = merge("coords");
+
+  var coordinates = this.attributes.map( function (cell, coords) {
+    return coords;
+  });
+
 
   var incrementable = this.attributes.getIsIncrementable();
 
-  var bakedAttributes = this.attributes.merge(incrementable, mergeIsIncrementable);
+  var bakedAttributes =
+    this.attributes
+      .merge(incrementable, mergeIsIncrementable)
+      .merge(coordinates, mergeCoordinates);
 
   return new Character({attributes: bakedAttributes });
+}
+
+Character.prototype.incrementAttribute = function (coords) {
+  var incremented = this.attributes.map( function (cell){
+
+    return cell;
+  });
+
+  console.log("incremented", incremented);
+
+  return new Character({attributes: incremented}).bake();
 }
 
 Character.generateRandom = function () {
@@ -289,7 +326,7 @@ function evaluateAttributeIncrements (attributes) {
  *
  * @param array
  * @returns array of same length as input array
- *   with each cell's value mapped to the difference to the maximum value in the row
+ *   with each cell's value mapped to the difference to the maximum value in the original array
  */
 function upperBound (array) {
   var max = array.max();
