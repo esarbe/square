@@ -1,6 +1,7 @@
 var assert = require('assert');
 var Square = require('../src/character.js');
 
+
 describe('Matrix', function () {
   describe('constructor', function () {
     it('should create a new matrix with rectangular values array', function () {
@@ -22,7 +23,7 @@ describe('Character', function () {
   
   var canBeIncremented = {
     values: [
-      [ true, false, false ],
+      [ false, false, true ],
       [ false, false, false ],
       [ false, false, false ]
     ]
@@ -30,9 +31,9 @@ describe('Character', function () {
 
   var onlyOneIncrementableCell = {
     values: [
-      [ { value: 4 }, { value: 5 }, { value: 6 } ],
+      [ { value: 6 }, { value: 5 }, { value: 4 } ],
       [ { value: 5 }, { value: 6 }, { value: 5 } ],
-      [ { value: 6 }, { value: 5 }, { value: 5 } ]
+      [ { value: 5 }, { value: 5 }, { value: 6 } ]
     ]
   };
 
@@ -61,7 +62,16 @@ describe('Character', function () {
     it('should create a new random character', function () {
       var random = Square.Character.generateRandom();
     });
-  }); 
+  });
+
+  describe('incrementAttribute', function () {
+    it('should permit to increment incrementable attributes', function () {
+      var attrs = new Square.Character.Attributes(onlyOneIncrementableCell);
+      var character = new Square.Character({attributes: attrs}).bake();
+			character.incrementAttribute([0,0]);
+    });
+  });
+
 });
 
 describe('Attributes', function () {
@@ -104,15 +114,6 @@ describe('Attributes', function () {
     });
   });
 
-  describe('getBounds', function () {
-    it('should return a matrix that contains the upper bound of each cell', function () {
-      
-      var attrs = new Square.Character.Attributes(onlyOneIncrementableCell);
-      var bounds = attrs.getBounds();
-      assert.deepEqual(onlyOnIncrementableCellBounds, bounds);
-    });
-  });
-
   describe('getIsIncrementable', function () {
     it('should return a matrix that contains the truth values ' +
          'for whether a cell can be incremented by one', function () {
@@ -132,6 +133,13 @@ describe('Attributes', function () {
       assert.deepEqual(onlyOneIncrementableCellValues, attrValues);
     });
   });
+
+  var attrs = new Square.Character.Attributes(onlyOneIncrementableCell);
+	var ia = attrs.increment([0,0]);
+	console.log("A", attrs.getValues());
+	console.log("- ", attrs.getIsIncrementable());
+	console.log("AI", ia.getValues());
+	console.log("-", ia.getIsIncrementable());
 
 });
 
