@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <script src="./bower_components/jquery/dist/jquery.js"></script>
+    <script src="./bower_components/ractive/ractive.js"></script>
+    <script src="./bower_components/bacon/dist/Bacon.js"></script>
+    <script src="./src/character.js"></script>
+
+    <script id="character-template" type='text/ractive'>
+      <table id='attributes' class="edit">
+        {{ #with attributes.values }}
+          {{ #.}} 
+            <tr>
+              {{ #. }}
+                <td data-is-incrementable="{{isIncrementable}}"
+                    data-is-decrementable="{{isDecrementable}}"
+                    data-coords="[{{coords}}]"
+                  {{ #isDecrementable }}
+                    draggable="true"
+                  {{ /isDecrementable }}
+                    >
+                  {{ value }}
+                </td>
+              {{ /. }}
+            </tr>
+          {{ /. }}
+        {{ /with }}
+      </table> 
+    </script>
+    <style>
+
+td.over[data-is-incrementable=true] { background-color: green; color: silver}
+td.source {
+	background-color: #27576b !important;
+	border: 4pt #022636 solid !important;
+	color: silver !important;
+}
+
+
+td { 
+  border: 4pt black solid;
+  width: 100px;
+  height: 100px;
+  vertical-align: middle;
+  text-align: center;
+	font-weight: bold;
+	font-size: 14pt;
+}
+
+.dragging td[data-is-incrementable=false] {
+  border: 4pt #551000 solid;
+  background-color: #aa4f39;
+	color: silver;
+}
+
+.dragging td[data-is-incrementable=true] {
+  border: 4pt #003d19 solid;
+  color: silver;
+	background-color: #297a4a;
+}
+
+td[data-is-decrementable=false] {
+  border: 4pt silver solid; 
+  color: silver;
+}
+    </style>
+
+  <body>
+    <section id="character"></section>
+    <script>
+
+$.event.props.push('dataTransfer')
+
+var character = Square.Character.generateRandom();
+
+var characterView = new Ractive({
+  data: character,
+  el: "#character",
+  template: '#character-template' 
+});
+
+var $dragSource = $('#character td[data-is-decrementable=true]');
+var $dropSink = $('#character td[data-is-incrementable=true]');
+
+var drag = 
+  $dragSource
+    .asEventStream('dragstart')
+    .doAction( e => {
+      e.dataTransfer.setData('text/plain', '');
+      e.dataTransfer.effectAllowed = 'move';
+    })
+    .toProperty();
+
+drag
+  .onValue( event => {
+    $('#character').addClass('dragging');
+    $(event.target).addClass('source');
+  });
+
+var dragEnd = $("html")
+  .asEventStream("dragend")
+
+var drop = $dropSink
+  .asEventStream('drop')
+  .doAction( e => e.preventDefault())
+  .toProperty();
+
+drag.zip(drop, 
+    (dragEvent, dropEvent) => [dragEvent.target,dropEvent.target])
+  .onValue ( ([source, target]) => {
+		var sourceCoords = $(source).data('coords');
+	  var targetCoords = $(target).data('coords');
+    character = 
+		  character
+			  .decrementAttribute(sourceCoords)
+				.incrementAttribute(targetCoords);
+		console.log("moving from", sourceCoords, " to ", targetCoords);
+    characterView.set(character);  
+  }); 
+
+$dropSink
+  .asEventStream("dragenter dragover")
+  .doAction( event => event.preventDefault() )
+  .filter( event => event.type === 'dragenter')
+  .onValue( event => {
+    $(event.target).addClass("drag over");
+  });
+
+$dropSink
+  .asEventStream("dragleave drop")
+  .onValue( event => {
+    $(event.target).removeClass("drag over");  
+  });
+
+dragEnd.onValue( event => {
+  $(event.target).removeClass('drag source');
+  $('#character').removeClass('dragging');
+}); 
+
+    </script>
+  </body>
+</html>
