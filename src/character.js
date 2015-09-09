@@ -259,13 +259,17 @@ var Square = {};
   }
 
   /**
-   * return a Matrix with booleans indicating whether the coresponding
+   * return a Matrix with booleans indicating whether the corresponding
    * cell can be incremented
   */
   Attributes.prototype.getIsIncrementable = function () {
     return this.getValues().crossMapMerge(canBeIncremented, and);
   }
 
+  /**
+   * return a Matrix with booleans indicating whether the correspoinding
+   * cell can be decremented
+   */
   Attributes.prototype.getIsDecrementable = function () {
     return this.getValues().crossMapMerge(canBeDecremented, and);
   }
