@@ -211,7 +211,7 @@ var Square = {};
       mutated[coords[0]][coords[1]].value += value;
       return new Attributes({values: mutated});
     } else {
-      return this;
+      throw "cannot mutate attributes";
     }
   }
 
