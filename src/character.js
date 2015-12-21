@@ -1,8 +1,9 @@
 var Square = {};
 
-(function (context) {
+(function (Square) {
   "use strict";
 
+  // might not be efficient, but it works for now
   Object.prototype.clone = function () {
     return JSON.parse(JSON.stringify(this));
   }
@@ -267,7 +268,7 @@ var Square = {};
   }
 
   /**
-   * return a Matrix with booleans indicating whether the correspoinding
+   * return a Matrix with booleans indicating whether the corresponding
    * cell can be decremented
    */
   Attributes.prototype.getIsDecrementable = function () {
