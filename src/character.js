@@ -176,6 +176,10 @@ var Square = {};
 
   class Ruleset {
 
+    constructor ({attributeMax}) {
+      this.attributeMax = attributeMax;
+    }
+
     incrementRandomAttribute (attributes) {
 
       function toValue (cell) {
@@ -189,7 +193,7 @@ var Square = {};
       var cellCoords =
         attributes
           .map(toValue)
-          .crossMapMerge(canBeIncremented, and)
+          .crossMapMerge(canBeIncrementedWithLimit(this.attributeMax), and)
           .getValuesAndCoordinates();
 
       var coordinatesForIncrementation =
@@ -217,23 +221,17 @@ var Square = {};
 
       return new Character({attributes: attributes})
     }
+
+    validate (character) {
+
+    }
   }
+
 
   class Character {
      constructor({attributes}) {
        this.attributes = attributes;
      }
-  }
-
-
-  /**
-   * check if the given value can be incremented by one given the difference to the upper bound
-   * @param value
-   * @param differenceToUpperBound
-   * @returns {boolean} whether the value can be incremented
-   */
-  function cellValueCanBeIncremented (value, differenceToUpperBound) {
-    return differenceToUpperBound > 1 || (differenceToUpperBound == 0 && value < ATTRIBUTES_VALUE_MAX);
   }
 
   function and (a, b) {
@@ -255,13 +253,15 @@ var Square = {};
     });
   }
 
-  function canBeIncremented (array) {
-    var max = array.max();
+  function canBeIncrementedWithLimit (limit) {
+    return function (array) {
+      var max = array.max();
 
-    return array.map( function (value) {
-      var differenceToMax = max - value;
-      return differenceToMax > 1 || (differenceToMax == 0 && value < ATTRIBUTES_VALUE_MAX);
-    });
+      return array.map( function (value) {
+        var differenceToMax = max - value;
+        return differenceToMax > 1 || (differenceToMax == 0 && value < limit);
+      });
+    }
   }
 
   function canBeDecremented (array) {
@@ -279,7 +279,7 @@ var Square = {};
 
   Square.Character = Character;
   Square.Matrix = Matrix
-  Square.Ruleset = new Ruleset();
+  Square.Ruleset = new Ruleset({ attributeMax : 6});
 
 }(Square));
 
