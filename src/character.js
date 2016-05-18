@@ -3,6 +3,8 @@ var Square = {};
 (function (Square) {
   "use strict";
 
+  var ATTRIBUTES_VALUE_MAX = 6;
+
   // might not be efficient, but it works for now
   Object.prototype.clone = function () {
     return JSON.parse(JSON.stringify(this));
@@ -63,17 +65,13 @@ var Square = {};
     for (j = 0; j < width; j++) {
       var row = [];
       for(k = 0; k < height; k++) {
-        row.push({});
+        row.push(0);
       }
       values.push(row);
     }
    
     return Matrix.fromValues(values);
   };
-
-  Matrix.prototype.point = function (template) {
-    return new Matrix(template);
-  }
 
   /**
    * check whether the attributes array is rectangular
@@ -83,7 +81,7 @@ var Square = {};
       return row.length;
     });
     
-    var accInit = [ lengths[0] || 0, true];
+    var accInit = [ lengths[0] || 0, true ];
 
     var allSameLength = lengths.reduce( function ( acc, b) {
       return [acc[0], acc[0] === b && acc[1]]
@@ -113,15 +111,15 @@ var Square = {};
       } );
     });
 
-    return this.point({values: mapped});
+    return new Matrix({values: mapped});
   }
 
   Matrix.prototype.mapColumns = function (f) {
-    return this.point({values: this.transpose().values.map(f)}).transpose();
+    return new Matrix({values: this.transpose().values.map(f)}).transpose();
   }
 
   Matrix.prototype.mapRows = function (f) {
-    return this.point({values: this.values.map(f)});
+    return new Matrix({values: this.values.map(f)});
   }
 
   /**
@@ -146,7 +144,7 @@ var Square = {};
       return merged;
     }
 
-    return this.point({values: merge(this.values, other.values, f)});
+    return new Matrix({values: merge(this.values, other.values, f)});
   }
 
   /**
@@ -176,173 +174,57 @@ var Square = {};
     return rowWise.merge(columnWise, g);
   }
 
-  function Attributes(template) {
-    
-    this.VALUE_MIN = 1;
-    this.VALUE_MAX = 6;
-    
-    template = template || Matrix.withSize(3,3).map(function () { 
-      return { value : Attributes.VALUE_MIN }; });
+  class Ruleset {
 
-    Matrix.call(this, template);
-  }
+    incrementRandomAttribute (attributes) {
 
-  Attributes.prototype.point = function (template) {
-    return new Attributes(template);
-  }
-
-  Attributes.VALUE_MIN = 1;
-  Attributes.VALUE_MAX = 6;
-
-  Attributes.prototype = new Matrix();
-
-  Attributes.prototype.decrement = function (coords) {
-    return this.mutate(coords, this.getIsDecrementable, -1);
-  }
-
-  Attributes.prototype.increment = function (coords) {
-    return this.mutate(coords, this.getIsIncrementable, 1);
-  } 
-  
-  Attributes.prototype.mutate = function (coords, verify, value) {
-    var mutationIsValid = verify.call(this);
-
-    if (mutationIsValid.values[coords[0]][coords[1]] === true) {
-      var mutated = this.values.clone();
-      mutated[coords[0]][coords[1]].value += value;
-      return new Attributes({values: mutated});
-    } else {
-      throw "cannot mutate attributes";
-    }
-  }
-
-  Attributes.prototype.incrementAtRandom = function () {
-    function canIncrement (cell) {
-      return cell.value;
-    }
-
-    function toCellCoordinate (cell) {
-      return cell.coord;
-    }
-
-    var cellCoords = 
-      this
-        .getIsIncrementable()
-        .getValuesAndCoordinates();
-
-    var coordinatesForIncrementation = 
-      cellCoords
-        .filter(canIncrement)
-        .map(toCellCoordinate)
-        .randomElement();
-
-    var values = this.values.clone();
-
-    var
-        i = coordinatesForIncrementation[0],
-        k = coordinatesForIncrementation[1];
-
-    values[i][k].value++;
-    return this.point({values: values});
-  }
-
-  Attributes.prototype.isValid = function () {
-    if (!this.attributes.isValid() || this.attributes.length !== this.attributes[0].length ) {
-      return false;
-    }
-
-    var upperBoundsRowwise = attributes.map(upperBound);
-    var upperBoundsColumnwise = attributes.transpose().map(upperBound).transpose();
-  }
-
-  Attributes.prototype.getValues = function () {
-    return this.map(function (v) { return v.value; });
-  }
-
-  /**
-   * return a Matrix with booleans indicating whether the corresponding
-   * cell can be incremented
-  */
-  Attributes.prototype.getIsIncrementable = function () {
-    return this.getValues().crossMapMerge(canBeIncremented, and);
-  }
-
-  /**
-   * return a Matrix with booleans indicating whether the corresponding
-   * cell can be decremented
-   */
-  Attributes.prototype.getIsDecrementable = function () {
-    return this.getValues().crossMapMerge(canBeDecremented, and);
-  }
-
-  var Character = function (template) {
-    this.attributes = new Attributes((template || {}).attributes);
-  }
-
-  Character.prototype.bake = function () {
-
-    function merge (propertyName) {
-      return function (attr, propertyValue) {
-        var merged = attr.clone();
-        merged[propertyName] = propertyValue;
-        return merged;
+      function toValue (cell) {
+        return cell.value;
       }
+
+      function toCellCoordinate (cell) {
+        return cell.coord;
+      }
+
+      var cellCoords =
+        attributes
+          .map(toValue)
+          .crossMapMerge(canBeIncremented, and)
+          .getValuesAndCoordinates();
+
+      var coordinatesForIncrementation =
+        cellCoords
+          .filter(toValue)
+          .map(toCellCoordinate)
+          .randomElement();
+
+      var values = attributes.values.clone();
+
+      var
+          i = coordinatesForIncrementation[0],
+          k = coordinatesForIncrementation[1];
+
+      values[i][k].value++;
+      return Matrix.fromValues(values);
     }
 
-    var mergeIsIncrementable = merge("isIncrementable");
-    var mergeIsDecrementable = merge("isDecrementable");
-    var mergeCoordinates = merge("coords");
+    generateRandom () {
+      var attributes = Matrix.withSize(3,3).map( function (cell) { return { value: 1 }} )
 
-    var coordinates = this.attributes.map( function (cell, coords) {
-      return coords;
-    });
+      for (var a = 0; a < 18; a++) {
+        attributes = this.incrementRandomAttribute(attributes);
+      }
 
-    var incrementable = this.attributes.getIsIncrementable();
-    var decrementable = this.attributes.getIsDecrementable();
-
-    var bakedAttributes =
-      this.attributes
-        .merge(incrementable, mergeIsIncrementable)
-        .merge(decrementable, mergeIsDecrementable)
-        .merge(coordinates, mergeCoordinates);
-
-    return new Character({attributes: bakedAttributes });
-  }
-
-  Character.prototype.decrementAttribute = function (coords) {
-    var decremented = this.attributes.decrement(coords); 
-
-    return new Character({attributes: decremented}).bake();
-  }
-  
-  Character.prototype.incrementAttribute = function (coords) {
-    var incremented = this.attributes.increment(coords); 
-
-    return new Character({attributes: incremented}).bake();
-  }
-
-  Character.generateRandom = function () {
-    var character = new Character();
-
-    for (var a = 0; a < 18; a++) {
-      character = character.incrementAttributeAtRandom();
+      return new Character({attributes: attributes})
     }
-
-    return character.bake();
   }
 
-  Character.prototype.incrementAttributeAtRandom = function () {
-    var attributes = this.attributes.incrementAtRandom();
-    return new Character({attributes: attributes})
+  class Character {
+     constructor({attributes}) {
+       this.attributes = attributes;
+     }
   }
 
-  Character.prototype.isValid = function () {
-    return this.attributes.isValid();
-  }
-
-  Character.prototype.toString = function () {
-    return JSON.stringify(this);
-  }
 
   /**
    * check if the given value can be incremented by one given the difference to the upper bound
@@ -351,7 +233,7 @@ var Square = {};
    * @returns {boolean} whether the value can be incremented
    */
   function cellValueCanBeIncremented (value, differenceToUpperBound) {
-    return differenceToUpperBound > 1 || (differenceToUpperBound == 0 && value < Attributes.VALUE_MAX);
+    return differenceToUpperBound > 1 || (differenceToUpperBound == 0 && value < ATTRIBUTES_VALUE_MAX);
   }
 
   function and (a, b) {
@@ -378,15 +260,15 @@ var Square = {};
 
     return array.map( function (value) {
       var differenceToMax = max - value;
-      return differenceToMax > 1 || (differenceToMax == 0 && value < Attributes.VALUE_MAX);
-    }); 
+      return differenceToMax > 1 || (differenceToMax == 0 && value < ATTRIBUTES_VALUE_MAX);
+    });
   }
 
   function canBeDecremented (array) {
     var maxCanBeDecremented = upperBound(array).indexOf(1) === -1;
     var max = array.max();
     var isMax = array.map( function (v) { return v === max });
-    
+
     return zip(array, isMax).map( function (v) {
       var value = v[0],
         isMax = v[1];
@@ -396,13 +278,14 @@ var Square = {};
 
 
   Square.Character = Character;
-  Square.Character.Attributes = Attributes;
   Square.Matrix = Matrix
+  Square.Ruleset = new Ruleset();
 
 }(Square));
 
 if (typeof exports !== 'undefined') {
-  exports.Character = Square.Character;
   exports.Matrix = Square.Matrix;
+  exports.Character = Square.Character;
+  exports.Ruleset = Square.Ruleset;
 }
 
