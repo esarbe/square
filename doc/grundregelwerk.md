@@ -217,6 +217,9 @@ Maxime will ihre Fertigkeit 'Gewichtheben' von 4 auf 5 steigern. Dies kostet sie
 
 ## Konflikte
 
+Möchte ein Charakter die Aktion eines anderen verhindern, so handelt es sich dabei um einen Konflikt. Dabei kann es sich zum Beispiel um einen Kampfe, eine Diskussion oder auch ein Wettdichten handeln. Bei Proben eines Konfliktes werden die Proberesultate verglichen.
+
+
 ## Nahkampf
 - Vergleichender Fertigkeitswurf beider Parteien
 - anschliessend Schadenswiderstandwurf auf Attribut+Fertigkeit, Differenz als Schaden
@@ -282,3 +285,6 @@ verteilt werden. Eine zusätzliche Erschöpfung auf das Wurfattribut.
 ## Zusammenfassungen
 ## Charakterbogen
 ## Index
+
+
+
